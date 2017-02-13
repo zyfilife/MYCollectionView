@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		40695C231E4F7144009A2FFA /* MYCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40695C221E4F7144009A2FFA /* MYCollectionView.swift */; };
 		40811A841E4D71630048C489 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40811A831E4D71630048C489 /* AppDelegate.swift */; };
 		40811A861E4D71630048C489 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40811A851E4D71630048C489 /* ViewController.swift */; };
 		40811A891E4D71630048C489 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40811A871E4D71630048C489 /* Main.storyboard */; };
@@ -15,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		40695C221E4F7144009A2FFA /* MYCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MYCollectionView.swift; sourceTree = "<group>"; };
 		40811A801E4D71630048C489 /* MYCollectionViewDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MYCollectionViewDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		40811A831E4D71630048C489 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		40811A851E4D71630048C489 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -35,6 +37,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		40695C211E4F7135009A2FFA /* MYCollectionView */ = {
+			isa = PBXGroup;
+			children = (
+				40695C221E4F7144009A2FFA /* MYCollectionView.swift */,
+			);
+			path = MYCollectionView;
+			sourceTree = "<group>";
+		};
 		40811A771E4D71620048C489 = {
 			isa = PBXGroup;
 			children = (
@@ -60,6 +70,7 @@
 				40811A8A1E4D71630048C489 /* Assets.xcassets */,
 				40811A8C1E4D71630048C489 /* LaunchScreen.storyboard */,
 				40811A8F1E4D71630048C489 /* Info.plist */,
+				40695C211E4F7135009A2FFA /* MYCollectionView */,
 			);
 			path = MYCollectionViewDemo;
 			sourceTree = "<group>";
@@ -137,6 +148,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40695C231E4F7144009A2FFA /* MYCollectionView.swift in Sources */,
 				40811A861E4D71630048C489 /* ViewController.swift in Sources */,
 				40811A841E4D71630048C489 /* AppDelegate.swift in Sources */,
 			);
@@ -302,6 +314,7 @@
 				40811A941E4D71630048C489 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

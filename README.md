@@ -1,2 +1,5 @@
 # MYCollectionView
-CollectionView的几种使用
+官方的CollectionView没有按sction为单位的backgroundView
+因此自己写了个
+
+暂时没加入复用，稍后有时间再加入
