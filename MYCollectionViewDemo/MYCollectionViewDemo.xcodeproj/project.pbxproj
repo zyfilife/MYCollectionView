@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		40695C231E4F7144009A2FFA /* MYCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40695C221E4F7144009A2FFA /* MYCollectionView.swift */; };
+		40695C251E515996009A2FFA /* MYCollectionViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40695C241E515996009A2FFA /* MYCollectionViewFlowLayout.swift */; };
 		40811A841E4D71630048C489 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40811A831E4D71630048C489 /* AppDelegate.swift */; };
 		40811A861E4D71630048C489 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40811A851E4D71630048C489 /* ViewController.swift */; };
 		40811A891E4D71630048C489 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40811A871E4D71630048C489 /* Main.storyboard */; };
@@ -17,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		40695C221E4F7144009A2FFA /* MYCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MYCollectionView.swift; sourceTree = "<group>"; };
+		40695C241E515996009A2FFA /* MYCollectionViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MYCollectionViewFlowLayout.swift; sourceTree = "<group>"; };
 		40811A801E4D71630048C489 /* MYCollectionViewDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MYCollectionViewDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		40811A831E4D71630048C489 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		40811A851E4D71630048C489 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -41,6 +43,7 @@
 			isa = PBXGroup;
 			children = (
 				40695C221E4F7144009A2FFA /* MYCollectionView.swift */,
+				40695C241E515996009A2FFA /* MYCollectionViewFlowLayout.swift */,
 			);
 			path = MYCollectionView;
 			sourceTree = "<group>";
@@ -148,6 +151,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40695C251E515996009A2FFA /* MYCollectionViewFlowLayout.swift in Sources */,
 				40695C231E4F7144009A2FFA /* MYCollectionView.swift in Sources */,
 				40811A861E4D71630048C489 /* ViewController.swift in Sources */,
 				40811A841E4D71630048C489 /* AppDelegate.swift in Sources */,

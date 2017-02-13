@@ -2,4 +2,4 @@
 官方的CollectionView没有按sction为单位的backgroundView
 因此自己写了个
 
-暂时没加入复用，稍后有时间再加入
+目前只支持简单布局，并不完善，有时间会再加入视图复用，

@@ -15,10 +15,7 @@ import UIKit
 }
 
 @objc protocol MYCollectionViewDelegate: UIScrollViewDelegate {
-    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
-    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, insetForSectionAt section: Int) -> UIEdgeInsets
     @objc optional func collectionView(my_collectionView: MYCollectionView, didSelectItemAt indexPath: IndexPath)
-    
     @objc optional func collectionView(my_collectionView: MYCollectionView, viewForHeaderInSection section: Int) -> UIView?
     @objc optional func collectionView(my_collectionView: MYCollectionView, backgroundColorForHeaderInSection section: Int) -> UIColor
     @objc optional func collectionView(my_collectionView: MYCollectionView, heightForHeaderInSection section: Int) -> CGFloat
@@ -30,19 +27,60 @@ import UIKit
     @objc optional func collectionView(my_collectionView: MYCollectionView, containViewInSection section: Int) -> UIView?
     @objc optional func collectionView(my_collectionView: MYCollectionView, backgroundColorForContainViewInSection section: Int) -> UIColor
     
-    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat
-    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat
+    @objc optional func collectionView(my_collectionView: MYCollectionView, backgroundViewInSection section: Int) -> UIView?
+    @objc optional func collectionView(my_collectionView: MYCollectionView, backgroundColorForBackgroundViewInSection section: Int) -> UIColor
+}
+
+@objc protocol MYCollectionViewDelegateFlowLayout: MYCollectionViewDelegate {
+    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
+    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, insetForSectionAt section: Int) -> UIEdgeInsets
+    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat
+    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat
+    @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, sectionSpacingForSectionAt section: Int) -> CGFloat
 }
 
 class MYCollectionView: UIScrollView {
     
-//    lazy fileprivate var indexPathsOfVisibleItems = [IndexPath]()
-//    lazy fileprivate var visibleCells = [UICollectionViewCell]()
-//    lazy fileprivate var arrayOfCollectionViewSectionHeaderViews = [UIView]()
-//    lazy fileprivate var arrayOfCollectionViewSectionBackgroundViews = [UIView]()
-    
     weak var my_dataSource: MYCollectionViewDataSource?
-    weak var my_delegate: MYCollectionViewDelegate?
+    weak var my_delegate: MYCollectionViewDelegateFlowLayout?
+    
+    fileprivate var contentViewSize: CGSize {
+        return CGSize(width: self.frame.size.width-self.contentInset.left-self.contentInset.right,
+                      height: self.frame.size.height-self.contentInset.top-self.contentInset.bottom)
+    }
+    
+    fileprivate var contentHeight:CGFloat = 0.0
+    
+    var collectionHeaderView: UIView? = nil {
+        didSet {
+            guard let view = self.collectionHeaderView else {
+                return
+            }
+            let height = view.frame.size.height
+            self.contentInset.top += height
+            view.frame = CGRect(x: -self.contentInset.left,
+                                y: -height,
+                                width: self.frame.size.width,
+                                height: height)
+            self.addSubview(view)
+            self.contentOffset.y = -height
+        }
+    }
+    
+    var collectionFooterView: UIView? = nil {
+        didSet {
+            guard let view = self.collectionFooterView else {
+                return
+            }
+            let height = view.frame.size.height
+            self.contentInset.bottom += height
+            view.frame = CGRect(x: -self.contentInset.left,
+                                y: self.contentHeight,
+                                width: self.frame.size.width,
+                                height: height)
+            self.addSubview(view)
+        }
+    }
     
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
@@ -58,6 +96,10 @@ class MYCollectionView: UIScrollView {
         
     }
     
+    deinit {
+        print("\(self.classForCoder): 已销毁")
+    }
+    
     func my_reloadData() {
         
         self.removeAllSubviews()
@@ -66,118 +108,155 @@ class MYCollectionView: UIScrollView {
             return
         }
         
-        var sections: Int!
+        var sections = 1
         if let number = dataSource.numberOfSections?(in: self) {
             sections = number
-        }else {
-            sections = 1
         }
         
         var sectionY: CGFloat = 0
-        var sectionW: CGFloat = 0
         var sectionH: CGFloat = 0
+        
         for i in 0..<sections {
-            var containView: UIView!
-            if let _containView = delegate.collectionView?(my_collectionView: self, containViewInSection: i) {
-                containView = _containView
-            }else {
+            var containView = delegate.collectionView?(my_collectionView: self,
+                                                       containViewInSection: i)
+            if containView == nil {
                 containView = UIView()
-                if let backgroundColor = delegate.collectionView?(my_collectionView: self, backgroundColorForContainViewInSection: i) {
-                    containView.backgroundColor = backgroundColor
+                if let backgroundColor = delegate.collectionView?(my_collectionView: self,
+                                                                  backgroundColorForContainViewInSection: i) {
+                    containView?.backgroundColor = backgroundColor
                 }else {
-                    containView.backgroundColor = .clear
+                    containView?.backgroundColor = .clear
                 }
             }
             
-            var headerView: UIView!
-            if let _headerView = delegate.collectionView?(my_collectionView: self, viewForHeaderInSection: i) {
-                headerView = _headerView
-            }else {
-                headerView = UIView()
-                if let backgroundColor = delegate.collectionView?(my_collectionView: self, backgroundColorForHeaderInSection: i) {
-                    headerView.backgroundColor = backgroundColor
+            var backgroundView = delegate.collectionView?(my_collectionView: self,
+                                                          backgroundViewInSection: i)
+            if backgroundView == nil {
+                backgroundView = UIView()
+                if let backgroundColor = delegate.collectionView?(my_collectionView: self,
+                                                                  backgroundColorForBackgroundViewInSection: i) {
+                    backgroundView?.backgroundColor = backgroundColor
                 }else {
-                    headerView.backgroundColor = .lightGray
+                    backgroundView?.backgroundColor = .clear
+                }
+            }
+            
+            var headerView = delegate.collectionView?(my_collectionView: self,
+                                                      viewForHeaderInSection: i)
+            if headerView == nil {
+                headerView = UIView()
+                if let backgroundColor = delegate.collectionView?(my_collectionView: self,
+                                                                  backgroundColorForHeaderInSection: i) {
+                    headerView?.backgroundColor = backgroundColor
+                }else {
+                    headerView?.backgroundColor = .lightGray
                 }
             }
             
             var heightForHeader:CGFloat = 0.0
-            if let _heightForHeader = delegate.collectionView?(my_collectionView: self, heightForHeaderInSection: i) {
+            if let _heightForHeader = delegate.collectionView?(my_collectionView: self,
+                                                               heightForHeaderInSection: i) {
                 heightForHeader = _heightForHeader
             }
             
-            var footerView: UIView!
-            if let _footerView = delegate.collectionView?(my_collectionView: self, viewForFooterInSection: i) {
-                footerView = _footerView
-            }else {
+            var footerView = delegate.collectionView?(my_collectionView: self,
+                                                      viewForFooterInSection: i)
+            if footerView == nil {
                 footerView = UIView()
-                if let backgroundColor = delegate.collectionView?(my_collectionView: self, backgroundColorForFooterInSection: i) {
-                    footerView.backgroundColor = backgroundColor
+                if let backgroundColor = delegate.collectionView?(my_collectionView: self,
+                                                                  backgroundColorForFooterInSection: i) {
+                    footerView?.backgroundColor = backgroundColor
                 }else {
-                    footerView.backgroundColor = .lightGray
+                    footerView?.backgroundColor = .lightGray
                 }
             }
             
             var heightForFooter:CGFloat = 0.0
-            if let _heightForFooter = delegate.collectionView?(my_collectionView: self, heightForFooterInSection: i) {
+            if let _heightForFooter = delegate.collectionView?(my_collectionView: self,
+                                                               heightForFooterInSection: i) {
                 heightForFooter = _heightForFooter
             }
             
-            let rows = dataSource.collectionView(my_collectionView: self, numberOfItemsInSection: i)
+            let layout = MYCollectionViewFlowLayout()
             
-            let layout = UICollectionViewFlowLayout()
-            
-            var inSets: UIEdgeInsets!
-            if let _inSets = delegate.collectionView?(my_collectionView: self, layout: layout, insetForSectionAt: i) {
+            var inSets = UIEdgeInsets.zero
+            if let _inSets = delegate.collectionView?(my_collectionView: self,
+                                                      layout: layout,
+                                                      insetForSectionAt: i) {
                 inSets = _inSets
-            }else {
-                inSets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
             }
             layout.sectionInset = inSets
+            
             var minimumInteritemSpacing: CGFloat = 10
-            if let _minimumInteritemSpacing = delegate.collectionView?(my_collectionView: self, layout: layout, minimumInteritemSpacingForSectionAt: i) {
+            if let _minimumInteritemSpacing = delegate.collectionView?(my_collectionView: self,
+                                                                       layout: layout,
+                                                                       minimumInteritemSpacingForSectionAt: i) {
                 minimumInteritemSpacing = _minimumInteritemSpacing
             }
             layout.minimumInteritemSpacing = minimumInteritemSpacing
+            
             var minimumLineSpacing: CGFloat = 10
-            if let _minimumLineSpacing = delegate.collectionView?(my_collectionView: self, layout: layout, minimumLineSpacingForSectionAt: i) {
+            if let _minimumLineSpacing = delegate.collectionView?(my_collectionView: self,
+                                                                  layout: layout,
+                                                                  minimumLineSpacingForSectionAt: i) {
                 minimumLineSpacing = _minimumLineSpacing
             }
             layout.minimumLineSpacing = minimumLineSpacing
-            sectionY += i == 0 ? heightForHeader + inSets.top + sectionH: heightForHeader + sectionH + inSets.bottom + heightForFooter
-            sectionW = self.frame.size.width - inSets.left - inSets.right
             
+            var sectionSpacing: CGFloat = 0.0
+            if let _sectionSpacing = delegate.collectionView?(my_collectionView: self,
+                                                              layout: layout,
+                                                              sectionSpacingForSectionAt: i) {
+                sectionSpacing = _sectionSpacing
+            }
+            layout.sectionSpacing = sectionSpacing
+            
+            sectionY += i == 0 ? sectionSpacing + heightForHeader + inSets.top + sectionH: sectionSpacing + heightForHeader + sectionH + inSets.bottom + heightForFooter
+            
+            let sectionAvailableWidth = self.contentViewSize.width - inSets.left - inSets.right
+            layout.sectionAvailableWidth = sectionAvailableWidth
+            
+            let rows = dataSource.collectionView(my_collectionView: self,
+                                                 numberOfItemsInSection: i)
             for j in 0..<rows {
                 let indexPath = IndexPath(row: j, section: i)
-                let cell = dataSource.collectionView(my_collectionView: self, cellForItemAt: indexPath)
+                let cell = dataSource.collectionView(my_collectionView: self,
+                                                     cellForItemAt: indexPath)
                 var size: CGSize!
-                if let _size = delegate.collectionView?(my_collectionView: self, layout: layout, sizeForItemAt: indexPath) {
+                if let _size = delegate.collectionView?(my_collectionView: self,
+                                                        layout: layout,
+                                                        sizeForItemAt: indexPath) {
                     size = _size
                 }else {
                     size = CGSize(width: 50, height: 50)
                 }
                 layout.itemSize = size
-                let columnNumberInALine = Int(Float(sectionW + minimumInteritemSpacing) / Float(size.width + minimumInteritemSpacing))
-                let itemSpacing = columnNumberInALine > 1 ? (sectionW - CGFloat(columnNumberInALine)*size.width)/CGFloat(columnNumberInALine-1) : 0
+                let columnNumberInALine = Int(Float(sectionAvailableWidth + minimumInteritemSpacing) / Float(size.width + minimumInteritemSpacing))
+                let itemSpacing = columnNumberInALine > 1 ? (sectionAvailableWidth - CGFloat(columnNumberInALine)*size.width)/CGFloat(columnNumberInALine-1) : 0
                 let row = CGFloat(j / columnNumberInALine)
                 let column = CGFloat(j % columnNumberInALine)
                 let cellX = inSets.left + size.width*column + itemSpacing*column
                 let cellY = inSets.top + size.height*row + minimumLineSpacing*row
                 let origin = CGPoint(x: cellX, y: cellY)
                 cell.frame = CGRect(origin: origin, size: size)
-                containView.addSubview(cell)
+                containView!.addSubview(cell)
                 
                 if j == rows-1 {
                     sectionH = cell.frame.maxY
                 }
             }
-            containView.frame = CGRect(x: 0, y: sectionY-inSets.top, width: self.frame.size.width, height: sectionH + inSets.bottom)
-            headerView.frame = CGRect(x: 0, y: sectionY-inSets.top-heightForHeader, width: self.frame.size.width, height: heightForHeader)
-            footerView.frame = CGRect(x: 0, y: containView.frame.maxY, width: self.frame.size.width, height: heightForFooter)
-            self.addSubview(containView)
-            self.addSubview(headerView)
-            self.addSubview(footerView)
-            self.contentSize = CGSize(width: self.frame.size.width, height: footerView.frame.maxY)
+            containView?.frame = CGRect(x: 0, y: heightForHeader, width: self.contentViewSize.width, height: sectionH + inSets.bottom)
+            headerView?.frame = CGRect(x: 0, y: 0, width: self.contentViewSize.width, height: heightForHeader)
+            footerView?.frame = CGRect(x: 0, y: containView!.frame.maxY, width: self.contentViewSize.width, height: heightForFooter)
+            backgroundView?.frame = CGRect(x: 0, y: sectionY-inSets.top-heightForHeader, width: self.contentViewSize.width, height: heightForHeader + sectionH + inSets.bottom + heightForFooter)
+            
+            self.contentHeight = backgroundView!.frame.maxY + sectionSpacing
+            
+            self.addSubview(backgroundView!)
+            backgroundView?.addSubview(containView!)
+            backgroundView?.addSubview(headerView!)
+            backgroundView?.addSubview(footerView!)
+            self.contentSize = CGSize(width: self.contentViewSize.width, height: self.contentHeight)
         }
     }
     
@@ -186,6 +265,9 @@ class MYCollectionView: UIScrollView {
             view.removeFromSuperview()
             for subview in view.subviews {
                 subview.removeFromSuperview()
+                for ssubview in subview.subviews {
+                    ssubview.removeFromSuperview()
+                }
             }
         }
     }

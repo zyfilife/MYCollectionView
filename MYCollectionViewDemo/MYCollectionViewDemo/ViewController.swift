@@ -8,13 +8,15 @@
 
 import UIKit
 
-class ViewController: UIViewController, MYCollectionViewDelegate, MYCollectionViewDataSource {
+class ViewController: UIViewController, MYCollectionViewDelegateFlowLayout, MYCollectionViewDataSource {
 
     lazy var collectionView: MYCollectionView = {
         let view = MYCollectionView()
         view.my_delegate = self
         view.my_dataSource = self
+        view.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         view.frame = self.view.bounds
+        view.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 237/255, alpha: 1)
         return view
     }()
     
@@ -26,8 +28,14 @@ class ViewController: UIViewController, MYCollectionViewDelegate, MYCollectionVi
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.collectionView.contentInset = UIEdgeInsets(top: 200, left: 0, bottom: 0, right: 0)
         self.view.addSubview(self.collectionView)
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 200))
+        headerView.backgroundColor = .darkGray
+        self.collectionView.collectionHeaderView = headerView
+        
+        let footer = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 200))
+        footer.backgroundColor = .darkGray
+        self.collectionView.collectionFooterView = footer
     }
 
     override func didReceiveMemoryWarning() {
@@ -56,23 +64,26 @@ class ViewController: UIViewController, MYCollectionViewDelegate, MYCollectionVi
         return cell
     }
     
-    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let minimumInteritemSpacing = collectionViewLayout.minimumInteritemSpacing
-        let inSets = collectionViewLayout.sectionInset
+        let sectionAvailableWidth = collectionViewLayout.sectionAvailableWidth
         switch indexPath.section {
         case 0:
-            let width = (my_collectionView.frame.size.width-inSets.left-inSets.right-minimumInteritemSpacing*3)/4
-            return CGSize(width: width, height: width)
+            let columnNumber = 4
+            let width = (sectionAvailableWidth-minimumInteritemSpacing*CGFloat(columnNumber-1))/CGFloat(columnNumber)
+            return CGSize(width: width, height: width+25)
         case 1:
-            let width = (my_collectionView.frame.size.width-inSets.left-inSets.right-minimumInteritemSpacing*1)/2
+            let columnNumber = 2
+            let width = (sectionAvailableWidth-minimumInteritemSpacing*CGFloat(columnNumber-1))/CGFloat(columnNumber)
             return CGSize(width: width, height: 45)
         default:
-            let width = (my_collectionView.frame.size.width-inSets.left-inSets.right-minimumInteritemSpacing*2)/3.0
-            return CGSize(width: width, height: width)
+            let columnNumber = 3
+            let width = (sectionAvailableWidth-minimumInteritemSpacing*CGFloat(columnNumber-1))/CGFloat(columnNumber)
+            return CGSize(width: width, height: width+30)
         }
     }
     
-    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         switch section {
         case 0:
             return 15
@@ -83,18 +94,18 @@ class ViewController: UIViewController, MYCollectionViewDelegate, MYCollectionVi
         }
     }
     
-    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         switch section {
         case 0:
             return 15
         case 1:
             return 9
         default:
-            return 53.0
+            return 53
         }
     }
     
-    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: UICollectionViewFlowLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         switch section {
         case 0:
             return UIEdgeInsets(top: 15, left: 16, bottom: 15, right: 16)
@@ -106,13 +117,37 @@ class ViewController: UIViewController, MYCollectionViewDelegate, MYCollectionVi
     }
     
     func collectionView(my_collectionView: MYCollectionView, backgroundColorForContainViewInSection section: Int) -> UIColor {
-        return .blue
+        return .white
     }
     
     func collectionView(my_collectionView: MYCollectionView, heightForHeaderInSection section: Int) -> CGFloat {
         return 44
     }
     
+    func collectionView(my_collectionView: MYCollectionView, backgroundColorForHeaderInSection section: Int) -> UIColor {
+        return UIColor(red: 251/255, green: 251/255, blue: 251/255, alpha: 1)
+    }
+    
+    func collectionView(my_collectionView: MYCollectionView, heightForFooterInSection section: Int) -> CGFloat {
+        return 30
+    }
+    
+    func collectionView(my_collectionView: MYCollectionView, backgroundColorForFooterInSection section: Int) -> UIColor {
+        return UIColor(red: 251/255, green: 251/255, blue: 251/255, alpha: 1)
+    }
+    
+    func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, sectionSpacingForSectionAt section: Int) -> CGFloat {
+        return 15
+    }
+    
+    func collectionView(my_collectionView: MYCollectionView, backgroundViewInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.layer.cornerRadius = 5
+        view.layer.masksToBounds = true
+        view.layer.borderColor = UIColor(red: 221/255, green: 221/255, blue: 221/255, alpha: 1).cgColor
+        view.layer.borderWidth = 0.5
+        return view
+    }
     
 }
 
