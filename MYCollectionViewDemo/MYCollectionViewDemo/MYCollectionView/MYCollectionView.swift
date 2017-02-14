@@ -39,6 +39,9 @@ import UIKit
     @objc optional func collectionView(my_collectionView: MYCollectionView, layout collectionViewLayout: MYCollectionViewFlowLayout, sectionSpacingForSectionAt section: Int) -> CGFloat
 }
 
+typealias Section = Int
+typealias Row = Int
+
 class MYCollectionView: UIScrollView {
     
     weak var my_dataSource: MYCollectionViewDataSource?
@@ -102,7 +105,18 @@ class MYCollectionView: UIScrollView {
     
     func my_reloadData() {
         
-        self.removeAllSubviews()
+        //swift没有oc的一键移除所有子视图方法，下面的这个方法当然不靠谱，
+        //加入复用以后，可以遍历所有可见视图，将可见视图移除
+        
+        for view in self.subviews {
+            view.removeFromSuperview()
+            for subview in view.subviews {
+                subview.removeFromSuperview()
+                for ssubview in subview.subviews {
+                    ssubview.removeFromSuperview()
+                }
+            }
+        }
         
         guard let delegate = self.my_delegate, let dataSource = self.my_dataSource else {
             return
@@ -218,6 +232,7 @@ class MYCollectionView: UIScrollView {
             
             let rows = dataSource.collectionView(my_collectionView: self,
                                                  numberOfItemsInSection: i)
+            
             for j in 0..<rows {
                 let indexPath = IndexPath(row: j, section: i)
                 let cell = dataSource.collectionView(my_collectionView: self,
@@ -239,36 +254,60 @@ class MYCollectionView: UIScrollView {
                 let cellY = inSets.top + size.height*row + minimumLineSpacing*row
                 let origin = CGPoint(x: cellX, y: cellY)
                 cell.frame = CGRect(origin: origin, size: size)
-                containView!.addSubview(cell)
                 
                 if j == rows-1 {
                     sectionH = cell.frame.maxY
                 }
+                
+                containView?.addSubview(cell)
+                
             }
+            
             containView?.frame = CGRect(x: 0, y: heightForHeader, width: self.contentViewSize.width, height: sectionH + inSets.bottom)
+            
             headerView?.frame = CGRect(x: 0, y: 0, width: self.contentViewSize.width, height: heightForHeader)
             footerView?.frame = CGRect(x: 0, y: containView!.frame.maxY, width: self.contentViewSize.width, height: heightForFooter)
+            
+            backgroundView?.addSubview(headerView!)
+            backgroundView?.addSubview(containView!)
+            backgroundView?.addSubview(footerView!)
+            
             backgroundView?.frame = CGRect(x: 0, y: sectionY-inSets.top-heightForHeader, width: self.contentViewSize.width, height: heightForHeader + sectionH + inSets.bottom + heightForFooter)
+            
+            self.addSubview(backgroundView!)
             
             self.contentHeight = backgroundView!.frame.maxY + sectionSpacing
             
-            self.addSubview(backgroundView!)
-            backgroundView?.addSubview(containView!)
-            backgroundView?.addSubview(headerView!)
-            backgroundView?.addSubview(footerView!)
             self.contentSize = CGSize(width: self.contentViewSize.width, height: self.contentHeight)
+            
         }
     }
     
-    fileprivate func removeAllSubviews() {
-        for view in self.subviews {
-            view.removeFromSuperview()
-            for subview in view.subviews {
-                subview.removeFromSuperview()
-                for ssubview in subview.subviews {
-                    ssubview.removeFromSuperview()
-                }
-            }
+    fileprivate func isInScreen(backgroundView: UIView) -> Bool {
+        let viewOriginY = backgroundView.frame.origin.y
+        let viewMaxY = backgroundView.frame.origin.y
+        return viewMaxY > self.contentOffset.y && viewOriginY < self.bounds.size.height + self.contentOffset.y
+    }
+    
+    fileprivate func isInScreen(containView: UIView) -> Bool {
+        guard let backgroundView = containView.superview else {
+            return false
         }
+        let viewOriginY = containView.frame.origin.y + backgroundView.frame.origin.y
+        let viewMaxY = containView.frame.origin.y + backgroundView.frame.origin.y
+        return viewMaxY > self.contentOffset.y && viewOriginY < self.bounds.size.height + self.contentOffset.y
+    }
+    
+    fileprivate func isInScreen(cell: UIView) -> Bool {
+        guard let containView = cell.superview else {
+            return false
+        }
+        guard let backgroundView = containView.superview else {
+            return false
+        }
+        let viewOriginY = cell.frame.origin.y + containView.frame.origin.y + backgroundView.frame.origin.y
+        let viewMaxY = cell.frame.maxY + containView.frame.origin.y + backgroundView.frame.origin.y
+        return viewMaxY > self.contentOffset.y && viewOriginY < self.bounds.size.height + self.contentOffset.y
     }
 }
+

@@ -33,7 +33,7 @@ class ViewController: UIViewController, MYCollectionViewDelegateFlowLayout, MYCo
         headerView.backgroundColor = .darkGray
         self.collectionView.collectionHeaderView = headerView
         
-        let footer = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 200))
+        let footer = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 100))
         footer.backgroundColor = .darkGray
         self.collectionView.collectionFooterView = footer
     }
