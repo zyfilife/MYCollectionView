@@ -1,5 +1,7 @@
 # MYCollectionView
-官方的CollectionView没有按sction为单位的backgroundView
-因此自己写了个
 
-目前只支持简单布局，并不完善，有时间会再加入视图复用，
+不支持视图服用
+适用于内容量少细节复杂的视图
+
+## Screen shots
+![screen shot1](https://github.com/zyfilife/MYCollectionView/blob/master/451AFEAA-E919-479D-A157-0A85854CE29E.png)
