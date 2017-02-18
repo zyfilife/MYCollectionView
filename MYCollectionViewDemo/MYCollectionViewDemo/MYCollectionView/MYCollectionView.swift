@@ -11,7 +11,7 @@ import UIKit
 @objc protocol MYCollectionViewDataSource: NSObjectProtocol {
     @objc optional func numberOfSections(in my_collection: MYCollectionView) -> Int
     func collectionView(my_collectionView: MYCollectionView, numberOfItemsInSection section: Int) -> Int
-    func collectionView(my_collectionView: MYCollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
+    func collectionView(my_collectionView: MYCollectionView, cellForItemAt indexPath: IndexPath) -> MYCollectionViewCell
 }
 
 @objc protocol MYCollectionViewDelegate: UIScrollViewDelegate {
@@ -54,37 +54,6 @@ class MYCollectionView: UIScrollView {
     
     fileprivate var contentHeight:CGFloat = 0.0
     
-    var collectionHeaderView: UIView? = nil {
-        didSet {
-            guard let view = self.collectionHeaderView else {
-                return
-            }
-            let height = view.frame.size.height
-            self.contentInset.top += height
-            view.frame = CGRect(x: -self.contentInset.left,
-                                y: -height,
-                                width: self.frame.size.width,
-                                height: height)
-            self.addSubview(view)
-            self.contentOffset.y = -height
-        }
-    }
-    
-    var collectionFooterView: UIView? = nil {
-        didSet {
-            guard let view = self.collectionFooterView else {
-                return
-            }
-            let height = view.frame.size.height
-            self.contentInset.bottom += height
-            view.frame = CGRect(x: -self.contentInset.left,
-                                y: self.contentHeight,
-                                width: self.frame.size.width,
-                                height: height)
-            self.addSubview(view)
-        }
-    }
-    
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         
@@ -105,15 +74,14 @@ class MYCollectionView: UIScrollView {
     
     func my_reloadData() {
         
-        //swift没有oc的一键移除所有子视图方法，下面的这个方法当然不靠谱，
-        //加入复用以后，可以遍历所有可见视图，将可见视图移除
-        
         for view in self.subviews {
-            view.removeFromSuperview()
-            for subview in view.subviews {
-                subview.removeFromSuperview()
-                for ssubview in subview.subviews {
-                    ssubview.removeFromSuperview()
+            if !view.isKind(of: MYCollectionExtendView.classForCoder()) && !view.isKind(of: MJRefreshComponent.classForCoder()) {
+                view.removeFromSuperview()
+                for subview in view.subviews {
+                    subview.removeFromSuperview()
+                    for ssubview in subview.subviews {
+                        ssubview.removeFromSuperview()
+                    }
                 }
             }
         }
@@ -254,10 +222,14 @@ class MYCollectionView: UIScrollView {
                 let cellY = inSets.top + size.height*row + minimumLineSpacing*row
                 let origin = CGPoint(x: cellX, y: cellY)
                 cell.frame = CGRect(origin: origin, size: size)
+                cell.indexPath = indexPath
                 
                 if j == rows-1 {
                     sectionH = cell.frame.maxY
                 }
+                
+                let tap = UITapGestureRecognizer(target: self, action: #selector(MYCollectionView.clickCellAction(_:)))
+                cell.addGestureRecognizer(tap)
                 
                 containView?.addSubview(cell)
                 
@@ -267,6 +239,18 @@ class MYCollectionView: UIScrollView {
             
             headerView?.frame = CGRect(x: 0, y: 0, width: self.contentViewSize.width, height: heightForHeader)
             footerView?.frame = CGRect(x: 0, y: containView!.frame.maxY, width: self.contentViewSize.width, height: heightForFooter)
+            
+            if heightForHeader > 0.5 {
+                let lineView = UIView(frame: CGRect(x: 0, y: heightForHeader-0.5, width: self.contentViewSize.width, height: 0.5))
+                lineView.backgroundColor = kSeparatorColor
+                headerView?.addSubview(lineView)
+            }
+            
+            if heightForFooter > 0.5 {
+                let line2 = UIView(frame: CGRect(x: 0, y: 0, width: self.contentViewSize.width, height: 0.5))
+                line2.backgroundColor = kSeparatorColor
+                footerView?.addSubview(line2)
+            }
             
             backgroundView?.addSubview(headerView!)
             backgroundView?.addSubview(containView!)
@@ -279,7 +263,17 @@ class MYCollectionView: UIScrollView {
             self.contentHeight = backgroundView!.frame.maxY + sectionSpacing
             
             self.contentSize = CGSize(width: self.contentViewSize.width, height: self.contentHeight)
-            
+        }
+        self.my_collectionFooterView?.setNeedsLayout()
+        self.my_collectionHeaderView?.setNeedsLayout()
+    }
+    
+    @objc fileprivate func clickCellAction(_ tap: UITapGestureRecognizer) {
+        if let view = tap.view as? MYCollectionViewCell {
+            guard let indexPath = view.indexPath else {
+                return
+            }
+            self.my_delegate?.collectionView?(my_collectionView: self, didSelectItemAt: indexPath)
         }
     }
     
@@ -310,4 +304,6 @@ class MYCollectionView: UIScrollView {
         return viewMaxY > self.contentOffset.y && viewOriginY < self.bounds.size.height + self.contentOffset.y
     }
 }
+
+
 
